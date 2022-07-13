@@ -29,7 +29,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
+# added apps that we have created
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'category',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
+
+# telling the system we are using a custom user model
+AUTH_USER_MODEL = 'accounts.Account'
 
 
 # Database
@@ -119,8 +123,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT= BASE_DIR /'static' #refering to the root(ecommerce), open static folder
-#identify the location of the static folder
+# refering to the root(ecommerce), open static folder
+STATIC_ROOT = BASE_DIR / 'static'
+# identify the location of the static folder
 STATICFILES_DIRS = [
-'ecommerce/static',
+    'ecommerce/static',
 ]

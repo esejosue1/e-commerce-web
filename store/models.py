@@ -3,6 +3,8 @@ from category.models import Category
 
 # Create your models here.
 
+# what the product model will have
+
 
 class Product(models.Model):
     product_name = models.CharField(max_length=200, unique=True)

@@ -130,6 +130,6 @@ STATICFILES_DIRS = [
     'ecommerce/static',
 ]
 
-#media files configuraions
-MEDIA_URL='/media/'
-MEDIA_ROOT = BASE_DIR /'media'
+# media files configuraions
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

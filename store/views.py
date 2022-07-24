@@ -1,3 +1,4 @@
+from tkinter import E
 from django.shortcuts import get_object_or_404, render
 
 from category.models import Category
@@ -32,5 +33,19 @@ def store(request, category_slug=None):
     return render(request, 'store/store.html', context)
 
 # What to show in the PRODUCT WINDOW, show the detail.html
+
+
 def product_detail(request, category_slug, product_slug):
-    return render(request, 'store/product_detail.html')
+    # check if the product item been searched can be found in our category slug, else raise error
+    try:
+        single_product = Product.objects.get(
+            category__slug=category_slug, slug=product_slug)
+    except Exception as e:
+        raise e
+
+    # context will hold the single product to be used in the html doc as a reference
+    context = {
+        'single_product': single_product,
+    }
+
+    return render(request, 'store/product_detail.html', context)

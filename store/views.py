@@ -30,3 +30,7 @@ def store(request, category_slug=None):
         'product_count': product_count
     }
     return render(request, 'store/store.html', context)
+
+# What to show in the PRODUCT WINDOW, show the detail.html
+def product_detail(request, category_slug, product_slug):
+    return render(request, 'store/product_detail.html')

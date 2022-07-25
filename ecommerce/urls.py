@@ -26,4 +26,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name="home"),
     path('store/', include('store.urls')),  # path redirect to store url
+    # path redirect to shopping cart
+    path('shoppingcart/', include('shoppingcart.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -4,7 +4,13 @@
     <section class="section-content padding-y bg">
       <div class="container">
         <!-- ============================ COMPONENT 1 ================================= -->
-
+        {%if not cart_items %}
+          <h2 class='text-center'>Your shopping cart it empty</h2>
+          <br>
+          <div class='text-center'>
+            <a href="{% url 'store' %}"class='btn btn-primary'>Continue Shopping </a>
+          </div>
+        {%else%}
         <div class="row">
           <aside class="col-lg-9">
             <div class="card">
@@ -120,6 +126,7 @@
           <!-- col.// -->
         </div>
         <!-- row.// -->
+        {%endif%}
         <!-- ============================ COMPONENT 1 END .// ================================= -->
       </div>
       <!-- container .//  -->

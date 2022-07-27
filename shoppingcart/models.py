@@ -1,5 +1,5 @@
-#what information will be included in the shoppingcart category under
-#the admin window
+# what information will be included in the shoppingcart category under
+# the admin window
 from itertools import product
 from statistics import quantiles
 from django.db import models
@@ -14,12 +14,18 @@ class ShoppingCart(models.Model):
     def __str__(self):
         return self.cart_id
 
-#will hold the item information under the cart
+# will hold the item information under the cart
+
+
 class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     is_active = models.BooleanField(default=True)
+
+    # show current total of specific product items
+    def subtotal(self):
+        return self.product.price*self.quantity
 
     def __str__(self):
         return self.product

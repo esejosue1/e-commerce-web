@@ -1,7 +1,10 @@
 # what will be shown when a request is made, to the cart html file
+from itertools import product
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from shoppingcart.models import CartItem, ShoppingCart
 from store.models import Product
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
 # function to obtain the current scession (cookie) frmo browser
@@ -41,8 +44,29 @@ def add_shoppingcart(request, product_id):
             cart=cart
         )
     cart_item.save()
+    # return HttpResponse(cart_item.quantity)
+    # exit()
     return redirect('shoppingcart')  # redirect to shopping cart homwepage
 
+# what to show in the shopping cart view
 
-def shoppingcart(request):
-    return render(request, 'store/shoppingcart.html')
+
+def shoppingcart(request, total=0, quantity=0, cart_items=None):
+    # check if we have a cart session, calculate total and quantity
+    try:
+        cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
+        cart_items = CartItem.objects.filter(is_active=True, cart=cart)
+        for product_item in cart_items:
+            total += (product_item.quantity*product_item.product.price)
+            quantity += product_item.quantity
+
+    except ObjectDoesNotExist:
+        pass  # ignore
+
+    # context to be pass to the html
+    context = {
+        'quantity': quantity,
+        'total': total,
+        'cart_items': cart_items,
+    }
+    return render(request, 'store/shoppingcart.html', context)

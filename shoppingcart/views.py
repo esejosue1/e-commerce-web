@@ -21,6 +21,9 @@ def get_session_id(request):
 
 def add_shoppingcart(request, product_id):
     # get the product id from Product class
+    color = request.GET['color']
+    size = request.GET['size']
+    return HttpResponse(color + ''+size)
     product = Product.objects.get(id=product_id)
     # want to check if we have a shopping cart session established
     try:

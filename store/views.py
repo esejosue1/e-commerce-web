@@ -2,7 +2,7 @@ from itertools import product
 from tkinter import E
 
 from django.shortcuts import get_object_or_404, render
-
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 from category.models import Category
 from .models import Product
@@ -26,14 +26,25 @@ def store(request, category_slug=None):
         products = Product.objects.filter(
             category=categories, is_available=True)  # filter throught the products for which are available and under the specific category
         product_count = products.count()  # count the total items under that category
+        paginator = Paginator(products, 3)
+        page = request.GET.get('page')  # get the page number
+        paged_products = paginator.get_page(
+            page)  # store the num of products/page
+
     # else display nothing with a zero total count
     else:
         # only filtered the available products to the home page
         products = Product.objects.all().filter(is_available=True)
+
+        # number of products to be listed per page num
+        paginator = Paginator(products, 3)
+        page = request.GET.get('page')  # get the page number
+        paged_products = paginator.get_page(
+            page)  # store the num of products/page
         # pass in only the products
         product_count = products.count()
     context = {
-        'products': products,
+        'products': paged_products,
         'product_count': product_count
     }
     return render(request, 'store/store.html', context)

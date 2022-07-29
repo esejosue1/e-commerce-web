@@ -64,13 +64,15 @@ def remove_shoppingcart(request, product_id):
 
     return redirect('shoppingcart')
 
-#delete product item when user tabs delete button
+# delete product item when user tabs delete button
+
+
 def delete_shoppingcart(request, product_id):
-    cart=ShoppingCart.objects.get(cart_id=get_session_id(request))
-    product=get_object_or_404(Product, id=product_id)
-    cart_item=CartItem.objects.get(cart=cart, product=product)
+    cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
+    product = get_object_or_404(Product, id=product_id)
+    cart_item = CartItem.objects.get(cart=cart, product=product)
     cart_item.delete()
-    
+
     return redirect('shoppingcart')
 
 
@@ -78,6 +80,8 @@ def delete_shoppingcart(request, product_id):
 def shoppingcart(request, total=0, quantity=0, cart_items=None):
     # check if we have a cart session, calculate total and quantity
     try:
+        tax = 0
+        grand_total = 0
         cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
         cart_items = CartItem.objects.filter(is_active=True, cart=cart)
         for product_item in cart_items:

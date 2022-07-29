@@ -1,6 +1,7 @@
 from itertools import product
 from tkinter import E
-
+from django.http import HttpResponse
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
@@ -34,7 +35,7 @@ def store(request, category_slug=None):
     # else display nothing with a zero total count
     else:
         # only filtered the available products to the home page
-        products = Product.objects.all().filter(is_available=True)
+        products = Product.objects.all().filter(is_available=True).order_by('id')
 
         # number of products to be listed per page num
         paginator = Paginator(products, 3)
@@ -70,3 +71,19 @@ def product_detail(request, category_slug, product_slug):
     }
 
     return render(request, 'store/product_detail.html', context)
+
+
+def search(request):
+    # if the keyword exist, get its value ['keyword]
+    if 'keyword' in request.GET:
+        keyword = request.GET['keyword']
+        if keyword:
+            # look for the whole description that matches the keyword
+            products = Product.objects.order_by(
+                '-created_date').filter(Q(description__icontains=keyword) | Q(product_name__icontains=keyword))
+            found = products.count()
+    context = {
+        'products': products,
+        'product_count': found,
+    }
+    return render(request, 'store/store.html', context)

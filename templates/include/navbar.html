@@ -104,11 +104,14 @@
                 <a href="./register.html"> Register</a>
               </div>
             </div>
-            <a href="./cart.html" class="widget-header pl-3 ml-3">
+            <a href="{% url 'shoppingcart'%}" class="widget-header pl-3 ml-3">
               <div class="icon icon-sm rounded-circle border">
                 <i class="fa fa-shopping-cart"></i>
               </div>
-              <span class="badge badge-pill badge-danger notify">0</span>
+              <!-- cart_counter from context_process return// -->
+              <span class="badge badge-pill badge-danger notify"
+                >{{cart_counter}}</span
+              >
             </a>
           </div>
           <!-- widgets-wrap.// -->

@@ -68,6 +68,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 # added to allow category scroll down functionality, availabale in all templates
                 'category.context_processor.menu_links',
+                'shoppingcart.context_process.counter',
             ],
         },
     },

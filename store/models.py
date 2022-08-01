@@ -1,4 +1,4 @@
-#models use for the admin user to add data under the store category
+# models use for the admin user to add data under the store category
 from django.db import models
 from category.models import Category
 from django.urls import reverse
@@ -35,6 +35,18 @@ variation_category_choice = (
     ('size', 'size'),
 )
 
+# modify the query set
+
+
+class VariationManager(models.Manager):
+    # return only the colors category under color and is_active
+    def colors(self):
+        return super(VariationManager, self).filter(variation_category='color', is_active=True)
+
+    # return only the colors category under size and is_active
+    def sizes(self):
+        return super(VariationManager, self).filter(variation_category='size', is_active=True)
+
 
 class Variation(models.Model):
     # if the product gets deleted, the variation should be deleted
@@ -44,6 +56,9 @@ class Variation(models.Model):
     variation_value = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     created_date = models.DateTimeField(auto_now=True)
+
+    # run the manager for its size and color categories
+    objects = VariationManager()
 
     def __unicode__(self):
         # return product from Variation class

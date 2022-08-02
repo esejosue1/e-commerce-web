@@ -60,6 +60,6 @@ class Variation(models.Model):
     # run the manager for its size and color categories
     objects = VariationManager()
 
-    def __unicode__(self):
-        # return product from Variation class
-        return self.product
+    def __str__(self):
+        # return product value from Variation class, get a string variation value
+        return self.variation_value

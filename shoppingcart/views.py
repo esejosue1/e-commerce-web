@@ -3,7 +3,7 @@ from itertools import product
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from shoppingcart.models import CartItem, ShoppingCart
-from store.models import Product
+from store.models import Product, Variation
 from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
@@ -21,11 +21,23 @@ def get_session_id(request):
 
 def add_shoppingcart(request, product_id):
     # get the product id from Product class
-    if request.method == 'POST':
-        color = request.POST['color']
-        size = request.POST['size']
-        print(color, size)
     product = Product.objects.get(id=product_id)
+    variation_products = []
+    if request.method == 'POST':
+        # color = request.POST['color']
+        # size = request.POST['size']
+        for item in request.POST:
+            key = item
+            value = request.POST[key]
+
+            try:
+                variation = Variation.objects.get(product=product,
+                                                  variation_category__iexact=key, variation_value__iexact=value)
+                variation_products.append(variation)
+                print(variation)
+            except:
+                pass
+
     # want to check if we have a shopping cart session established
     try:
         cart = ShoppingCart.objects.get(

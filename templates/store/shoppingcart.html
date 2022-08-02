@@ -37,8 +37,13 @@
                             ><u>{{cart_item.product.product_name}}</u></a
                           >
                           <p class="text-muted small">
-                            Color: 25 Mpx <br />
-                            Size: Canon
+                            {%if cart_item.variation.all%}
+                              {%for x in cart_item.variation.all%}
+                                {{x.variation_category | capfirst}} : {{x.variation_value | capfirst}}<br>
+
+                              {%endfor%}
+
+                            {%endif%}
                           </p>
                         </figcaption>
                       </figure>

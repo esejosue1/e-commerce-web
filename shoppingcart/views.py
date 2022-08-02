@@ -20,12 +20,13 @@ def get_session_id(request):
 
 
 def add_shoppingcart(request, product_id):
+
     # get the product id from Product class
     product = Product.objects.get(id=product_id)
     variation_products = []
+
+    # check for POST request, including our product variations
     if request.method == 'POST':
-        # color = request.POST['color']
-        # size = request.POST['size']
         for item in request.POST:
             key = item
             value = request.POST[key]
@@ -48,9 +49,13 @@ def add_shoppingcart(request, product_id):
         )
     cart.save()
 
-    # check what products we have in current shopping cart session
+    # check what products we have in current shopping cart session, if we have variations, we include the variations to the product in the cart
     try:
         cart_item = CartItem.objects.get(product=product, cart=cart)
+        if len(variation_products) > 0:
+            cart_item.variation.clear()
+            for x in variation_products:
+                cart_item.variation.add(x)
         cart_item.quantity += 1
         cart_item.save()
     except CartItem.DoesNotExist:
@@ -59,6 +64,11 @@ def add_shoppingcart(request, product_id):
             quantity=1,
             cart=cart
         )
+        if len(variation_products) > 0:
+            cart_item.variation.clear()
+            for x in variation_products:
+                cart_item.variation.add(x)
+
     cart_item.save()
     # return HttpResponse(cart_item.quantity)
     # exit()

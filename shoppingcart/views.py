@@ -49,16 +49,41 @@ def add_shoppingcart(request, product_id):
         )
     cart.save()
 
-    # check what products we have in current shopping cart session, if we have variations, we include the variations to the product in the cart
-    try:
-        cart_item = CartItem.objects.get(product=product, cart=cart)
-        if len(variation_products) > 0:
-            cart_item.variation.clear()
-            for x in variation_products:
-                cart_item.variation.add(x)
-        cart_item.quantity += 1
-        cart_item.save()
-    except CartItem.DoesNotExist:
+    # check if we have any cart items
+    cart_item_exists = CartItem.objects.filter(product=product, cart=cart)
+
+    # if we do, get the cart items (cart_item)
+    if cart_item_exists:
+        cart_items = CartItem.objects.filter(product=product, cart=cart)
+        existing_variations_list = []
+        p_id = []
+
+        # get the item variation and its id
+        for item in cart_items:
+            existing_variation = item.variation.all()
+            existing_variations_list.append(list(existing_variation))
+            p_id.append(item.id)
+
+        # if the varion product model is in the existing var list, get its index, its id from that index, and get its info using product and id, increase quantity
+        if variation_products in existing_variations_list:
+            index = existing_variations_list.index(variation_products)
+            item_id = p_id[index]
+            item = CartItem.objects.get(product=product, id=item_id)
+            item.quantity += 1
+            item.save()
+
+        # no variation model exists in existing list, create one
+        else:
+            item = CartItem.objects.create(
+                product=product, quantity=1, cart=cart)
+            # check what products we have in current shopping cart session, if we have variations, we include the variations to the product in the cart
+            if len(variation_products) > 0:
+                item.variation.clear()
+                item.variation.add(*variation_products)
+            item.save()
+
+    # no product found in cart, create one
+    else:
         cart_item = CartItem.objects.create(
             product=product,
             quantity=1,
@@ -66,10 +91,9 @@ def add_shoppingcart(request, product_id):
         )
         if len(variation_products) > 0:
             cart_item.variation.clear()
-            for x in variation_products:
-                cart_item.variation.add(x)
+            cart_item.variation.add(*variation_products)
 
-    cart_item.save()
+        cart_item.save()
     # return HttpResponse(cart_item.quantity)
     # exit()
     return redirect('shoppingcart')  # redirect to shopping cart homwepage

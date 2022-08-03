@@ -101,27 +101,35 @@ def add_shoppingcart(request, product_id):
 # remove products when decreasing quantity
 
 
-def remove_shoppingcart(request, product_id):
+def remove_shoppingcart(request, product_id, cart_item_id):
 
     cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
     product = get_object_or_404(Product, id=product_id)
-    cart_item = CartItem.objects.get(product=product, cart=cart)
-    if cart_item.quantity > 1:
-        cart_item.quantity -= 1  # decrease quantity
-        cart_item.save()
-    else:
-        cart_item.delete()  # delete the product
 
+    try:
+        cart_item = CartItem.objects.get(
+            product=product, cart=cart, id=cart_item_id)
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1  # decrease quantity
+            cart_item.save()
+        else:
+            cart_item.delete()  # delete the product
+    except:
+        pass
     return redirect('shoppingcart')
 
 # delete product item when user tabs delete button
 
 
-def delete_shoppingcart(request, product_id):
+def delete_shoppingcart(request, product_id, cart_item_id):
     cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
     product = get_object_or_404(Product, id=product_id)
-    cart_item = CartItem.objects.get(cart=cart, product=product)
-    cart_item.delete()
+    try:
+        cart_item = CartItem.objects.get(
+            cart=cart, product=product, id=cart_item_id)
+        cart_item.delete()
+    except:
+        pass
 
     return redirect('shoppingcart')
 

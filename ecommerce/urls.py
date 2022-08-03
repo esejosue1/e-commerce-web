@@ -28,4 +28,5 @@ urlpatterns = [
     path('store/', include('store.urls')),  # path redirect to store url
     # path redirect to shopping cart
     path('shoppingcart/', include('shoppingcart.urls')),
+    path('account/', include('accounts.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

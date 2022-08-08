@@ -1,19 +1,30 @@
-from django import forms
 from .models import Account
+from django import forms
 
 
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={
-        'placeholder': 'Enter Password'
+        'placeholder': 'Enter Password',
+        'class': 'form-control',
     }))
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
-        'placeholder': 'Confirm Password'
+        'placeholder': 'Confirm Password',
     }))
 
     class Meta:
         model = Account
         fields = ['first_name', 'last_name',
                   'phone_number', 'email', 'password']
+
+        # check in registration that password matches
+    def clean(self):
+        clean_data = super(RegistrationForm, self).clean()
+        password = clean_data.get('password')
+        confirm_password = clean_data.get('confirm_password')
+        if password != confirm_password:
+            raise forms.ValidationError(
+                "Password does not match!"
+            )
 
     def __init__(self, *args, **kwargs):
         super(RegistrationForm, self).__init__(*args, **kwargs)

@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render
 from django.urls import is_valid_path
-from django.contrib import messages
+from django.contrib import messages, auth
+from django.contrib.auth.decorators import login_required
 
 from accounts.models import Account
 from .forms import RegistrationForm
@@ -24,9 +25,10 @@ def register(request):
                 first_name=first_name, last_name=last_name, email=email, username=user_name, password=password)
             user.phone_number = phone_number
             user.save()
+
+            # django message if success, return redirect request
             messages.success(request, 'Registration Successful')
             return redirect('register')
-            
 
     else:
         form = RegistrationForm()
@@ -36,10 +38,31 @@ def register(request):
     }
     return render(request, 'account/register.html', context)
 
+# login user with email and password, authenticate, and log in
+
 
 def login(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        password = request.POST['password']
+        user = auth.authenticate(email=email, password=password)
+
+        if user is not None:
+            print(user)
+            auth.login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'No successful login')
+            return redirect('login')
+
     return render(request, 'account/login.html')
 
+# logs out the user, must be logged in
 
+
+@login_required(login_url='login')
 def logout(request):
+    auth.logout(request)
+    messages.success(request, 'Successfully logged out')
+    return redirect('login')
     return

@@ -1,0 +1,6 @@
+{% autoescape off %} 
+Hello {{user.first_name}},
+Please click on the below link to complete your email registration. 
+http://{{domain}}{% url 'verification' uidb64=uid token=token %} 
+If this wasnt you, please ignore this message
+{% endautoescape %}

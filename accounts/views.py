@@ -1,7 +1,18 @@
+from email.message import EmailMessage, Message
+from typing import Type
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import is_valid_path
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
+
+# django email verification packages
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
 
 from accounts.models import Account
 from .forms import RegistrationForm
@@ -26,9 +37,22 @@ def register(request):
             user.phone_number = phone_number
             user.save()
 
+            # USER Authentication
+            current_site = get_current_site(request)
+            mail_subject = 'Email Confirmation Required'
+            message = render_to_string('account/account_verification_email.html', {
+                'user': user,
+                'domain': current_site,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            to_email = email
+            send_email = EmailMessage(mail_subject, message, to=[to_email])
+            send_email.send()
+
             # django message if success, return redirect request
-            messages.success(request, 'Registration Successful')
-            return redirect('register')
+            #messages.success(request, 'Account has been created, please confirm verification in your email for account activation.')
+            return redirect('/account/login?command=verification&email='+email)
 
     else:
         form = RegistrationForm()
@@ -65,4 +89,23 @@ def logout(request):
     auth.logout(request)
     messages.success(request, 'Successfully logged out')
     return redirect('login')
-    return
+
+
+def verification(request, uidb64, token):
+
+    # decode our token, check token, make user, otherwise no
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Account._default_manager.get(pk=uid)
+    except(Account.DoesNotExist, TypeError, ValueError, OverflowError):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(
+            request, 'Validation Confirmed, you account has been created and active.')
+        return redirect('login')
+    else:
+        messages.error(request, 'Invalid verification, try again.')
+        return redirect('register')

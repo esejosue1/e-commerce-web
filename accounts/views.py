@@ -74,7 +74,7 @@ def login(request):
         if user is not None:
             print(user)
             auth.login(request, user)
-            return redirect('home')
+            return redirect('dashboard')
         else:
             messages.error(request, 'No successful login')
             return redirect('login')
@@ -109,3 +109,8 @@ def verification(request, uidb64, token):
     else:
         messages.error(request, 'Invalid verification, try again.')
         return redirect('register')
+
+
+@login_required(login_url='login')
+def dashboard(request):
+    return render(request, 'account/dashboard.html')

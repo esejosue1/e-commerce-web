@@ -114,3 +114,34 @@ def verification(request, uidb64, token):
 @login_required(login_url='login')
 def dashboard(request):
     return render(request, 'account/dashboard.html')
+
+# if the user forget password
+
+
+def forgotPassword(request):
+    if request.method == 'POST':
+        # check the user
+        email = request.POST['email']  # get the name='email' in html file
+        if Account.objects.filter(email=email).exists():
+            user = Account.objects.get(email__exact=email)
+
+            # reset password verification
+            current_site = get_current_site(request)
+            mail_subject = 'Password Reset'
+            message = render_to_string('account/account_password_reset.html', {
+                'user': user,
+                'domain': current_site,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            to_email = email
+            send_email = EmailMessage(mail_subject, message, to=[to_email])
+            send_email.send()
+            messages.success(
+                'Reset password link have being mailed, verify email for account activation.')
+            return redirect('login')
+
+        else:
+            messages.error(request, 'Email does not exist, try again.')
+            return redirect('forgotPassword')
+    return render(request, 'account/forgotPassword.html')

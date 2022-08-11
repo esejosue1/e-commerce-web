@@ -1,4 +1,5 @@
 from email.message import EmailMessage, Message
+from http.client import REQUEST_ENTITY_TOO_LARGE
 from typing import Type
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -137,11 +138,53 @@ def forgotPassword(request):
             to_email = email
             send_email = EmailMessage(mail_subject, message, to=[to_email])
             send_email.send()
-            messages.success(
-                'Reset password link have being mailed, verify email for account activation.')
+            messages.success(request,
+                             'Reset password link have being mailed, verify email for account activation.')
             return redirect('login')
 
         else:
             messages.error(request, 'Email does not exist, try again.')
             return redirect('forgotPassword')
     return render(request, 'account/forgotPassword.html')
+
+# verification format for password reset
+
+
+def reset_password_verification(request, uidb64, token):
+    # decode our token, check token, make user, otherwise no
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Account._default_manager.get(pk=uid)
+    except(Account.DoesNotExist, TypeError, ValueError, OverflowError):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        request.session['uid'] = uid
+        messages.success(request, 'Password verification success.')
+        return redirect('resetPassword')
+    else:
+        messages.error(request, 'Password link timed out, please try again.')
+        return redirect('login')
+
+# user reset password, confirm new passwords, update user's password in database
+
+
+def resetPassword(request):
+    if request.method == 'POST':
+        password = request.POST['password']
+        confirm_password = request.POST['confirm_password']
+
+        if password == confirm_password:
+            uid = request.session.get('uid')
+            user = Account.objects.get(pk=uid)
+            user.set_password(password)
+            user.save()
+            messages.success(
+                request, 'Password have being succesfully changed.')
+            return redirect('login')
+        else:
+            messages.error(request,
+                           "Password don't match, make sure to confirm password.")
+            return redirect('resetPassword')
+    else:
+        return render(request, 'account/account_reset_password.html')

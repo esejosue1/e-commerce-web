@@ -11,4 +11,5 @@ urlpatterns = [
          views.remove_shoppingcart, name='remove_shoppingcart'),
     path('delete_shoppingcart/<int:product_id>/<int:cart_item_id>/',  # url path for when a product is deleted from the shopping cart
          views.delete_shoppingcart, name='delete_shoppingcart'),
+    path('checkout/', views.checkout, name='checkout'),
 ]

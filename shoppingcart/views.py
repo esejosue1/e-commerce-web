@@ -161,3 +161,32 @@ def shoppingcart(request, total=0, quantity=0, cart_items=None):
         'grand_total': grand_total
     }
     return render(request, 'store/shoppingcart.html', context)
+
+
+# in the checkout url, show in the right side box the products we have in cart
+def checkout(request, total=0, quantity=0):
+    # check if we have a cart session, calculate total and quantity
+    try:
+        tax = 0
+        grand_total = 0
+        cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
+        cart_items = CartItem.objects.filter(is_active=True, cart=cart)
+        for product_item in cart_items:
+            total += (product_item.quantity*product_item.product.price)
+            quantity += product_item.quantity
+        tax = (2*total)/100
+
+        grand_total = total + tax
+
+    except ObjectDoesNotExist:
+        pass  # ignore
+
+    # context to be pass to the html
+    context = {
+        'quantity': quantity,
+        'total': total,
+        'cart_items': cart_items,
+        'tax': tax,
+        'grand_total': grand_total
+    }
+    return render(request, 'store/checkout.html', context)

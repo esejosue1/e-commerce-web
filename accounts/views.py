@@ -16,6 +16,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 
 from accounts.models import Account
+from shoppingcart.views import get_session_id
+from shoppingcart.models import CartItem, ShoppingCart
 from .forms import RegistrationForm
 # Create your views here.
 
@@ -72,8 +74,53 @@ def login(request):
         password = request.POST['password']
         user = auth.authenticate(email=email, password=password)
 
+        # if user successfully log in, check its cart content
         if user is not None:
-            print(user)
+            try:
+                cart = ShoppingCart.objects.get(
+                    cart_id=get_session_id(request))
+                cart_items_exist = CartItem.objects.filter(cart=cart).exists()
+                print(cart_items_exist)
+                if cart_items_exist:
+                    print('entering ig')
+                    cart_items = CartItem.objects.filter(cart=cart)
+
+                    # getting product variation by cart id
+                    product_variation = []
+                    for item in cart_items:
+                        p_variation = item.variation.all()
+                        product_variation.append(list(p_variation))
+
+                    # get the cart items from the user to access his product variation
+                    cart_items = CartItem.objects.filter(user=user)
+                    existing_variations_list = []
+                    id = []
+
+                    # get the item variation and its id
+                    for item in cart_items:
+                        existing_variation = item.variation.all()
+                        existing_variations_list.append(
+                            list(existing_variation))
+                        id.append(item.id)
+                        
+                    #check which variations match before and after login
+                    for p in product_variation:
+                        if p in existing_variations_list:
+                            index = existing_variations_list.index(p)
+                            item_id = id[index]
+                            item = CartItem.objects.get(id=item_id)
+                            item.quantity += 1
+                            item.user = user
+                            item.save()
+                        else:
+                            cart_items = CartItem.objects.filter(cart=cart)
+                            for item in cart_items:
+                                item.user = user
+                                item.save()
+
+            except:
+                pass
+
             auth.login(request, user)
             return redirect('dashboard')
         else:

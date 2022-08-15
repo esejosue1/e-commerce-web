@@ -4,6 +4,7 @@ from itertools import product
 from statistics import quantiles
 from django.db import models
 from store.models import Product, Variation
+from accounts.models import Account
 
 
 # Create your models here.
@@ -18,8 +19,9 @@ class ShoppingCart(models.Model):
 
 
 class CartItem(models.Model):
+    user=models.ForeignKey(Account, on_delete=models.CASCADE, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE)
+    cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE, null=True)
     # manytomanyfield is for a product to have other variations for the same prsoduct
     variation = models.ManyToManyField(Variation, blank=True)
     quantity = models.IntegerField()

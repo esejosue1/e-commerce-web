@@ -1,6 +1,8 @@
 from email.message import EmailMessage, Message
 from http.client import REQUEST_ENTITY_TOO_LARGE
 from typing import Type
+import requests
+
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import is_valid_path
@@ -102,8 +104,8 @@ def login(request):
                         existing_variations_list.append(
                             list(existing_variation))
                         id.append(item.id)
-                        
-                    #check which variations match before and after login
+
+                    # check which variations match before and after login
                     for p in product_variation:
                         if p in existing_variations_list:
                             index = existing_variations_list.index(p)
@@ -122,7 +124,20 @@ def login(request):
                 pass
 
             auth.login(request, user)
-            return redirect('dashboard')
+
+            # with requests, get the whole previous url
+            url = request.META.get('HTTP_REFERER')
+            try:
+                query = requests.utils.urlparse(url).query
+                # query -> next=/shoppingcart/checkout/
+                params = dict(x.split('=') for x in query.split('&'))
+                #{'next': '/shoppingcart/checkout/'}
+                if 'next' in params:
+                    nextPage = params['next']
+                    return redirect(nextPage)
+
+            except:
+                return redirect('dashboard')
         else:
             messages.error(request, 'No successful login')
             return redirect('login')

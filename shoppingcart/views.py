@@ -125,7 +125,8 @@ def add_shoppingcart(request, product_id):
         cart.save()
 
         # check if we have any cart items
-        cart_item_exists = CartItem.objects.filter(product=product, cart=cart).exists()
+        cart_item_exists = CartItem.objects.filter(
+            product=product, cart=cart).exists()
 
         # if we do, get the cart items (cart_item)
         if cart_item_exists:
@@ -177,13 +178,16 @@ def add_shoppingcart(request, product_id):
 
 
 def remove_shoppingcart(request, product_id, cart_item_id):
-
-    cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
     product = get_object_or_404(Product, id=product_id)
 
     try:
-        cart_item = CartItem.objects.get(
-            product=product, cart=cart, id=cart_item_id)
+        if request.user.is_authenticated:
+            cart_item = CartItem.objects.get(
+                product=product, user=request.user, id=cart_item_id)
+        else:
+            cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
+            cart_item = CartItem.objects.get(
+                product=product, cart=cart, id=cart_item_id)
         if cart_item.quantity > 1:
             cart_item.quantity -= 1  # decrease quantity
             cart_item.save()
@@ -197,12 +201,19 @@ def remove_shoppingcart(request, product_id, cart_item_id):
 
 
 def delete_shoppingcart(request, product_id, cart_item_id):
-    cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
+
     product = get_object_or_404(Product, id=product_id)
     try:
-        cart_item = CartItem.objects.get(
-            cart=cart, product=product, id=cart_item_id)
-        cart_item.delete()
+        if request.user.is_authenticated:
+            cart_item = CartItem.objects.get(
+                product=product, id=cart_item_id, user=request.user)
+            cart_item.delete()
+        else:
+            cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
+            cart_item = CartItem.objects.get(
+                cart=cart, product=product, id=cart_item_id)
+            cart_item.delete()
+
     except:
         pass
 
@@ -252,8 +263,12 @@ def checkout(request, total=0, quantity=0):
     try:
         tax = 0
         grand_total = 0
-        cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
-        cart_items = CartItem.objects.filter(is_active=True, cart=cart)
+        if request.user.is_authenticated:
+            cart_items = CartItem.objects.filter(
+                user=request.user, is_active=True)
+        else:
+            cart = ShoppingCart.objects.get(cart_id=get_session_id(request))
+            cart_items = CartItem.objects.filter(is_active=True, cart=cart)
         for product_item in cart_items:
             total += (product_item.quantity*product_item.product.price)
             quantity += product_item.quantity

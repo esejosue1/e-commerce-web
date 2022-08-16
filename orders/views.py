@@ -11,6 +11,12 @@ from .models import Order
 
 
 # Create your views here.
+
+def payment(request):
+    return render(request, 'orders/payment.html')
+
+
+# Grab the user info an save it into memmory to process payment and shipping
 def place_order(request, total=0, quantity=0):
     # check if we have any items
     user = request.user
@@ -30,7 +36,6 @@ def place_order(request, total=0, quantity=0):
         form = OrderForm(request.POST)
         # store all the billing info inside the order table
         if form.is_valid():
-            print('VALID')
             data = Order()
             data.user = user
             data.first_name = form.cleaned_data['first_name']
@@ -39,9 +44,10 @@ def place_order(request, total=0, quantity=0):
             data.phone = form.cleaned_data['phone']
             data.address = form.cleaned_data['address']
             data.address2 = form.cleaned_data['address2']
+            data.country = form.cleaned_data['country']
             data.city = form.cleaned_data['city']
             data.state = form.cleaned_data['state']
-
+            data.order_note = form.cleaned_data['order_note']
             # total order
             data.total = grand_total
             data.tax = tax
@@ -58,7 +64,21 @@ def place_order(request, total=0, quantity=0):
             o_number = current_date + str(data.id)
             data.order_number = o_number
             data.save()
-            return redirect('checkout')
+
+            # grab the info from the Orders that matches user, havent been ordered yet, and match in order numbers
+            order = Order.objects.get(
+                user=user, is_ordered=False, order_number=o_number)
+
+            # values to be access from the html
+            context = {
+                'order': order,
+                'total': total,
+                "tax": tax,
+                'grand_total': grand_total,
+                'cart_items': cart_items,
+            }
+
+            return render(request, 'orders/payment.html', context)
         else:
             print(form.errors)
             return redirect('checkout')

@@ -1,10 +1,14 @@
 from datetime import datetime
+from email import message
+from email.errors import MessageError
 from urllib import request
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+from django.contrib import messages
+
 
 from shoppingcart.models import CartItem
 from store.models import Product
@@ -19,6 +23,7 @@ import json
 
 def payment(request):
     body = json.loads(request.body)
+    print(body)
     order = Order.objects.get(
         user=request.user, is_ordered=False, order_number=body['orderID'])
 
@@ -54,9 +59,9 @@ def payment(request):
 
         # get the variations of the cart item since we have manytomany variations
         cart_item = CartItem.objects.get(id=item.id)
-        product_variation = cart_item.variations.all()
+        product_variation = cart_item.variation.all()
         order_product = OrderProduct.objects.get(id=order_product.id)
-        order_product.variations.set(product_variation)
+        order_product.variation.set(product_variation)
         order_product.save()
 
         # reduce the quantity of the sold prodcuts
@@ -68,18 +73,24 @@ def payment(request):
     CartItem.objects.filter(user=request.user).delete()
 
     # send order received email to customer
-    mail_subject='Thank you for your purchase, items are on the way!'
-    message=render_to_string('orders/order_recieved_email.html', {
+    mail_subject = 'Order Confirmation'
+    message = render_to_string('orders/order_received_email.html', {
         'user': request.user,
         'order': order,
+
     })
-    to_email=request.user.email
-    send_mail=EmailMessage(mail_subject, message, to=[to_email])
-    send_mail.send()
+    to_email = request.user.email
+    send_email = EmailMessage(mail_subject, message, to=[to_email])
+    send_email.send()
 
-    # send order number and transaction idback to the script as a json response
+    data = {
+        'order_number': order.order_number,
+        'transID': payment.payment_id,
+    }
 
-    return render(request, 'orders/payment.html')
+    # send back the data from where it came by, sendData() in html
+    return JsonResponse(data)
+    # return render(request, 'orders/payment.html')
 
 
 # Grab the user info an save it into memmory to process payment and shipping
@@ -149,3 +160,26 @@ def place_order(request, total=0, quantity=0):
         else:
             print(form.errors)
             return redirect('checkout')
+
+#what to pass once the order have been payed, get the order num and transID and pass them to the order-complete.html
+def order_complete(request):
+    order_number=request.GET.get("order_number")
+    transID=request.GET.get("payment_id")
+    
+    #check if we have an order or payment successful
+    try:
+        order=Order.objects.get(order_number=order_number, is_ordered=True)
+        items=OrderProduct.objects.filter(order_id=order.id)
+        payment=Payment.objects.get(payment_id=transID)
+        sub=order.order_total-order.tax
+        context={
+            'order':order,
+            'items':items,
+            'transID':payment.payment_id,
+            'payment':payment,
+            'sub':sub,
+        }
+        return render(request, 'orders/order_complete.html', context)
+    except(Payment.DoesNotExist, Order.DoesNotExist):
+        messages.error(request,"Order incomplete or Payment invalid, try again.")
+        return redirect('home')

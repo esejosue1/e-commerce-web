@@ -140,109 +140,85 @@
     </section>
     <!-- ========================= SECTION CONTENT END// ========================= -->
     <script>
+        
       //functino to generate a csrf token for data retrieval
       function getCookie(name) {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-              const cookies = document.cookie.split(';');
-              for (let i = 0; i < cookies.length; i++) {
-                  const cookie = cookies[i].trim();
-                  // Does this cookie string begin with the name we want?
-                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                      break;
-                  }
-              }
-          }
-          return cookieValue;
-      }
-      
-
-
-      var amount="{{ grand_total }}"
-      var url="{% url 'payment' %}"
-      var csrftoken = getCookie('csrftoken')
-      var orderID="{{ order.order_num }}"
-      var paypent_method='Paypal'
-
-      const fundingSources = [
-        paypal.FUNDING.PAYPAL,
-          paypal.FUNDING.CARD
-        ]
-
-      for (const fundingSource of fundingSources) {
-        const paypalButtonsComponent = paypal.Buttons({
-          fundingSource: fundingSource,
-
-          // optional styling for buttons
-          // https://developer.paypal.com/docs/checkout/standard/customize/buttons-style-guide/
-          style: {
-            shape: 'rect',
-            height: 40,
-          },
-
-          // set up the transaction
-          createOrder: (data, actions) => {
-            // pass in any options from the v2 orders create call:
-            // https://developer.paypal.com/api/orders/v2/#orders-create-request-body
-            const createOrderPayload = {
-              purchase_units: [
-                {
-                  amount: {
-                    value: amount,
-                  },
-                },
-              ],
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
+        }
+        return cookieValue;
+      } 
+      
+      var amount="{{grand_total}}"
+      var url="{% url 'payment'%}"
+      var csrfToken=getCookie('csrftoken')
+      var orderID = "{{order.order_number}}"
+      var payment_method= 'Paypal'
+      var redirect_url="{% url 'order_complete'%}"
 
-            return actions.order.create(createOrderPayload)
+      // Render the PayPal button into #paypal-button-container
+      paypal.Buttons({
+
+          // Set up the transaction
+          createOrder: function(data, actions) {
+              return actions.order.create({
+                  purchase_units: [{
+                      amount: {
+                          value: amount,
+                      }
+                  }]
+              });
           },
 
-          // finalize the transaction
-          onApprove: (data, actions) => {
-            const captureOrderHandler = (details) => {
-              const payerName = details.payer.name.given_name
-              console.log('Transaction completed!');
-              console.log(details);
-              sendData();
-              function sendData(){
-                  fetch(url,{
-                      method: "POST",
+          // Finalize the transaction
+          onApprove: function(data, actions) {
+              return actions.order.capture().then(function(orderData) {
+                  // Successful capture! For demo purposes:
+                  console.log(orderData)
+                  //send the data to our back-end storage
+                  sendData()
+                  function sendData(){
+                    fetch(url,{
+                      method:'POST',
                       headers:{
-                          "Content-type": "application/json",
-                          "X-CSRFToken" : csrftoken,
+                        'Content-type': "application/json",
+                        "X-CSRFToken":csrfToken,
+
                       },
                       body: JSON.stringify({
                         orderID: orderID,
-                        transID: details.id,
+                        transID: orderData.id,
                         payment_method: payment_method,
-                        status: details.status,
-
+                        status: orderData.status
                       }),
-                  })
-              }
-            }
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                      window.location.href=redirect_url + '?order_number='+data.order_number+'&payment_id='+data.transID;
 
-            return actions.order.capture().then(captureOrderHandler)
-          },
+                    })
+                    
+                  }
+                  
 
-          // handle unrecoverable errors
-          onError: (err) => {
-            console.error(
-              'An error prevented the buyer from checking out with PayPal',
-            )
-          },
-        })
+                  // Replace the above to show a success message within this page, e.g.
+                  // const element = document.getElementById('paypal-button-container');
+                  // element.innerHTML = '';
+                  // element.innerHTML = '<h3>Thank you for your payment!</h3>';
+                  // Or go to another URL:  actions.redirect('thank_you.html');
+              });
+          }
 
-        if (paypalButtonsComponent.isEligible()) {
-          paypalButtonsComponent
-            .render('#paypal-button-container')
-            .catch((err) => {
-              console.error('PayPal Buttons failed to render')
-            })
-        } else {
-          console.log('The funding source is ineligible')
-        }
-      }
-    </script>
+
+      }).render('#paypal-button-container');
+  </script>
 {% endblock %}

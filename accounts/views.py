@@ -81,6 +81,7 @@ def login(request):
             try:
                 cart = ShoppingCart.objects.get(
                     cart_id=get_session_id(request))
+                print(cart)
                 cart_items_exist = CartItem.objects.filter(cart=cart).exists()
                 print(cart_items_exist)
                 if cart_items_exist:

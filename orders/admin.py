@@ -3,11 +3,16 @@ from .models import Payment, Order, OrderProduct
 
 # Register your models here.
 
+# what will be shown at the bottom of every order product
+
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct
-    readonly_fields= ('payment','user','product','quantity','product_price', 'order')
-    extra = 0 #delete extra rows, django by default gives you 3 empty rows of data
+    readonly_fields = ('payment', 'user', 'product',
+                       'quantity', 'product_price', 'is_ordered')
+    extra = 0  # delete extra rows, django by default gives you 3 empty rows of data
+
+# what to show in orders
 
 
 class OrderAdmin(admin.ModelAdmin):

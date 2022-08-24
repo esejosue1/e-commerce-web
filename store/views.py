@@ -8,6 +8,7 @@ from django.contrib import messages, auth
 
 
 from category.models import Category
+from orders.models import OrderProduct
 from .forms import ReviewForm
 from .models import Product, ProductReview
 from category.models import Category
@@ -67,10 +68,21 @@ def product_detail(request, category_slug, product_slug):
     except Exception as e:
         raise e
 
+    #check if the user have purchase the product in order to submit review
+    try:
+        purchased_product=OrderProduct.objects.filter(user=request.user, product=single_product.id).exist()
+    except:
+        purchased_product=None
+    
+    #get the reviews of each product to showcase them 
+    reviews=ProductReview.objects.filter(product=single_product.id, status=True)
+    
     # context will hold the single product to be used in the html doc as a reference
     context = {
         'single_product': single_product,
         'in_cart': in_cart,
+        'purchased_product':purchased_product,
+        'reviews':reviews,
     }
 
     return render(request, 'store/product_detail.html', context)

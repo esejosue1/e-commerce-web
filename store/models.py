@@ -1,7 +1,12 @@
 # models use for the admin user to add data under the store category
 from django.db import models
-from category.models import Category
 from django.urls import reverse
+
+
+from category.models import Category
+from accounts.models import Account
+
+
 
 # Create your models here.
 
@@ -63,3 +68,17 @@ class Variation(models.Model):
     def __str__(self):
         # return product value from Variation class, get a string variation value
         return self.variation_value
+
+class ProductReview(models.Model):
+    product=models.ForeignKey(Product, on_delete=models.CASCADE)
+    user=models.ForeignKey(Account, on_delete=models.CASCADE)
+    subject=models.CharField(max_length=100, blank=True)
+    review=models.TextField(max_length=100, blank=True)
+    rating=models.FloatField()
+    ip=models.CharField(max_length=20,blank=True)
+    status=models.BooleanField(default=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.subject

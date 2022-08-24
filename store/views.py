@@ -2,11 +2,14 @@ from itertools import product
 from tkinter import E
 from django.http import HttpResponse
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.contrib import messages, auth
+
 
 from category.models import Category
-from .models import Product
+from .forms import ReviewForm
+from .models import Product, ProductReview
 from category.models import Category
 from shoppingcart.views import get_session_id, shoppingcart
 from shoppingcart.models import CartItem
@@ -87,3 +90,31 @@ def search(request):
         'product_count': found,
     }
     return render(request, 'store/store.html', context)
+
+
+def productReview(request, product_id):
+    url = request.META.get('HTTP_REFERER')
+    if request.method == 'POST':
+        # check for existing review, update
+        try:
+            reviews = ProductReview.objects.get(
+                user__id=request.user.id, product__id=product_id)
+            form = ReviewForm(request.POST, instance=reviews)
+            form.save()
+            messages.success(request, 'Your review have been updated.')
+            return redirect(url)
+        # create a new review post for the user
+        except ProductReview.DoesNotExist:
+            form = ReviewForm(request.POST)
+            if form.is_valid():
+                data = ProductReview()
+                data.product_id = product_id
+                data.user_id = request.user.id
+                data.subject = form.cleaned_data['subject']
+                data.review = form.cleaned_data['review']
+                data.rating = form.cleaned_data['rating']
+                data.ip = request.META.get('REMOTE_ADDR')
+                data.save()
+                messages.success(
+                    request, "Your review have been successfully submitted.")
+                return redirect(url)

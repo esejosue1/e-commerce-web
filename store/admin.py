@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Variation  # importing the Product class
+from .models import Product, ProductReview, Variation  # importing the Product class
 
 
 # Register your models here.
@@ -23,3 +23,4 @@ class variationAdmin(admin.ModelAdmin):
 # get access to he code in which the admin will add data
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Variation, variationAdmin)
+admin.site.register(ProductReview)

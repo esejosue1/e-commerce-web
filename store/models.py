@@ -45,6 +45,8 @@ class Product(models.Model):
             
             average+=float(review_of_product['average'])
             return average
+        else:
+            return average
     
     #get the total count of review for each product
     def reviewCount(self):
@@ -52,6 +54,8 @@ class Product(models.Model):
         total=0
         if totalReview['count'] is not None:
             total+=int(totalReview['count'])
+            return total
+        else:
             return total
 
 variation_category_choice = (

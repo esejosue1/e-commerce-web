@@ -32,7 +32,11 @@
                     <i class="fa fa-star{% if single_product.reviewCalculator < 2.5 %}-o{% elif single_product.reviewCalculator >= 2.5 and single_product.reviewCalculator < 3 %}-half-o {%endif%}" aria-hidden="true" ></i>
                     <i class="fa fa-star{% if single_product.reviewCalculator < 3.5 %}-o{% elif single_product.reviewCalculator >= 3.5 and single_product.reviewCalculator < 4 %}-half-o {%endif%}" aria-hidden="true" ></i>
                     <i class="fa fa-star{% if single_product.reviewCalculator < 4.5 %}-o{% elif single_product.reviewCalculator >= 4.5 and single_product.reviewCalculator < 5 %}-half-o {%endif%}" aria-hidden="true" ></i>
-                    {{single_product.reviewCount}} reviews 
+                    {%if single_product.reviewCalculator == 0%}
+                      No reviews
+                    {% else%}
+                      {{single_product.reviewCount}} reviews 
+                  {%endif%}
                   </span>
                 </div>
                 <div class="mb-3">
@@ -134,12 +138,16 @@
               <h3>Customer Reviews</h3>
               <div class="review-in-stars">
                 <span>
-                  <i class="fa fa-star{% if single_product.reviewCalculator < 0.5 %}-o{% elif single_product.reviewCalculator >= 0.5 and single_product.reviewCalculator < 1 %}-half-o {%endif%}" aria-hidden="true" ></i>
-                  <i class="fa fa-star{% if single_product.reviewCalculator < 1.5 %}-o{% elif single_product.reviewCalculator >= 1.5 and single_product.reviewCalculator < 2 %}-half-o {%endif%}" aria-hidden="true" ></i>
-                  <i class="fa fa-star{% if single_product.reviewCalculator < 2.5 %}-o{% elif single_product.reviewCalculator >= 2.5 and single_product.reviewCalculator < 3 %}-half-o {%endif%}" aria-hidden="true" ></i>
-                  <i class="fa fa-star{% if single_product.reviewCalculator < 3.5 %}-o{% elif single_product.reviewCalculator >= 3.5 and single_product.reviewCalculator < 4 %}-half-o {%endif%}" aria-hidden="true" ></i>
-                  <i class="fa fa-star{% if single_product.reviewCalculator < 4.5 %}-o{% elif single_product.reviewCalculator >= 4.5 and single_product.reviewCalculator < 5 %}-half-o {%endif%}" aria-hidden="true" ></i>
-                  {{single_product.reviewCount}} reviews 
+                    <i class="fa fa-star{% if single_product.reviewCalculator < 0.5 %}-o{% elif single_product.reviewCalculator >= 0.5 and single_product.reviewCalculator < 1 %}-half-o {%endif%}" aria-hidden="true" ></i>
+                    <i class="fa fa-star{% if single_product.reviewCalculator < 1.5 %}-o{% elif single_product.reviewCalculator >= 1.5 and single_product.reviewCalculator < 2 %}-half-o {%endif%}" aria-hidden="true" ></i>
+                    <i class="fa fa-star{% if single_product.reviewCalculator < 2.5 %}-o{% elif single_product.reviewCalculator >= 2.5 and single_product.reviewCalculator < 3 %}-half-o {%endif%}" aria-hidden="true" ></i>
+                    <i class="fa fa-star{% if single_product.reviewCalculator < 3.5 %}-o{% elif single_product.reviewCalculator >= 3.5 and single_product.reviewCalculator < 4 %}-half-o {%endif%}" aria-hidden="true" ></i>
+                    <i class="fa fa-star{% if single_product.reviewCalculator < 4.5 %}-o{% elif single_product.reviewCalculator >= 4.5 and single_product.reviewCalculator < 5 %}-half-o {%endif%}" aria-hidden="true" ></i>
+                    {%if single_product.reviewCalculator == 0%}
+                      No reviews
+                    {% else%}
+                      {{single_product.reviewCount}} reviews 
+                  {%endif%}
                 </span>
               </div>
             </header>

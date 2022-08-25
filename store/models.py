@@ -1,6 +1,8 @@
 # models use for the admin user to add data under the store category
+from itertools import count, product
 from django.db import models
 from django.urls import reverse
+from django.db.models import Avg, Count
 
 
 from category.models import Category
@@ -33,7 +35,24 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name
-
+    
+    #get the avg of review rating of each product
+    def reviewCalculator(self):
+        review_of_product=ProductReview.objects.filter(product=self, status=True).aggregate(average=Avg('rating'))
+        average=0
+        #since the above line have average inside, must initiate a new avg var with 0
+        if review_of_product['average'] is not None:
+            
+            average+=float(review_of_product['average'])
+            return average
+    
+    #get the total count of review for each product
+    def reviewCount(self):
+        totalReview=ProductReview.objects.filter(product=self, status=True).aggregate(count=Count('id'))
+        total=0
+        if totalReview['count'] is not None:
+            total+=int(totalReview['count'])
+            return total
 
 variation_category_choice = (
     ('color', 'color'),

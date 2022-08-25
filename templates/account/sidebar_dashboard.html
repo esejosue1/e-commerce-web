@@ -3,7 +3,7 @@
     <a class="list-group-item {% if '/account/' == request.path%}active {%endif%}" href="{% url 'dashboard'%}"> Dashboard </a>
     <a class="list-group-item {% if '/myOrders/' in request.path%}active {%endif%}" href="{% url 'myOrders'%}"> My Orders </a>
     <a class="list-group-item" href="#"> Return and refunds </a>
-    <a class="list-group-item" href="#">Edit Profile </a>
+    <a class="list-group-item {% if '/editProfile/' in request.path%}active {%endif%}" href="{% url 'editProfile'%}">Edit Profile </a>
     <a class="list-group-item" href="#"> Change Password</a>
     
   </ul>

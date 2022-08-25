@@ -16,11 +16,12 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+from django.shortcuts import get_object_or_404
 
 from accounts.models import Account
 from shoppingcart.views import get_session_id
 from shoppingcart.models import CartItem, ShoppingCart
-from .forms import RegistrationForm
+from .forms import RegistrationForm, UserForm, UserProfile 
 from orders.models import Order
 
 # Create your views here.
@@ -269,3 +270,23 @@ def myOrders(request):
     }
     
     return render(request, "account/myOrdersDashboard.html", context)
+
+def editProfile(request):
+    profile=get_object_or_404(UserProfile, user=request.user)
+    #check if we have an account already
+    if request.method == 'POST':
+        user_form=UserForm(request.POST, instance=request.user)
+        user_profile=UserProfile(request.POST, request.FILES, user=request.user)
+        if  user_form.is_valid() and user_profile.is_valid():
+            user_form.save()
+            user_profile.save()
+            messages.success(request, "Form completed, your information have been saved.")
+            return redirect('editProfile')
+    else:
+        user_form=UserForm(instance=request.user)
+        user_profile=UserProfile(instance=request.user)
+    context={
+        'user_form':user_form,
+        'user_profile': user_profile,
+    }
+    return render(request, 'account/editProfile.html')

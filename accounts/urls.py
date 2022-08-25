@@ -16,5 +16,6 @@ urlpatterns = [
          views.reset_password_verification, name='reset_password_verification'),
     path('resetPassword/', views.resetPassword, name='resetPassword'),
     path('myOrders/', views.myOrders, name='myOrders'),
+    path('editProfile/', views.editProfile, name='editProfile'),
 
 ]

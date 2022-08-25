@@ -1,4 +1,4 @@
-from .models import Account
+from .models import Account, UserProfile
 from django import forms
 
 
@@ -34,3 +34,13 @@ class RegistrationForm(forms.ModelForm):
             self.fields['phone_number'].widget.attrs['placeholder'] = 'Enter Phone Number'
             self.fields['email'].widget.attrs['placeholder'] = 'Enter Email'
             self.fields[field].widget.attrs['class'] = 'form-control'
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model:Account
+        fields=['first_name', 'last_name', 'phone_number']
+
+class UserProfile(forms.ModelForm):
+    class Meta: UserProfile
+    fields=['address_1', 'address_2', 'profile_picture', 'city', 'state', 'country']
+            

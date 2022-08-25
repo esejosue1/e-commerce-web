@@ -1,0 +1,60 @@
+{% extends 'base.html'%} {% block content%}
+
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-conten padding-y bg">
+  {% include 'include/messages.html'%}
+  <div class="container">
+    <div class="row">
+      <aside class="col-md-3">
+        <!--   SIDEBAR   -->
+        {% include 'account/sidebar_dashboard.html'%}
+        <br />
+        <a class="btn btn-light btn-block" href="{% url 'logout'%}">
+          <i class="fa fa-power-off"></i> <span class="text">Log out</span>
+        </a>
+        <!--   SIDEBAR .//END   -->
+      </aside>
+      <main class="col-md-9">
+        <article class="card">
+          <header class="card-header">
+            <strong class="d-inline-block mr-3">Order History</strong>
+          </header>
+          <div class="card-body">
+            <div class="row">
+                <div class='col-md-12'>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope='col'>Order Number</th>
+                                <th scope='col'>Billing Name</th>
+                                <th scope='col'>Phone Number</th>
+                                <th scope='col'>Order Total</th>
+                                <th scope='col'>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {%for order in my_orders_dash%}
+                            <tr>
+                                <th scope='row'>{{order.order_number}}</th>
+                                <td scope='row'>{{order.first_name}}{{order.last_name}}</td>
+                                <td scope='row'>{{order.phone}}</td>
+                                <td scope='row'>${{order.order_total}}</td>
+                                <td scope='row'>{{order.created_at}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+               
+            </div>
+          </div>
+        </article>
+        <!-- order-group.// -->
+      </main>
+    </div>
+    <!-- row.// -->
+  </div>
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+{% endblock %}

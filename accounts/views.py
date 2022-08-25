@@ -21,6 +21,8 @@ from accounts.models import Account
 from shoppingcart.views import get_session_id
 from shoppingcart.models import CartItem, ShoppingCart
 from .forms import RegistrationForm
+from orders.models import Order
+
 # Create your views here.
 
 
@@ -177,7 +179,13 @@ def verification(request, uidb64, token):
 
 @login_required(login_url='login')
 def dashboard(request):
-    return render(request, 'account/dashboard.html')
+    #get the total num of orders for dashboard display, -creared_at, the (-) gives results in descending order
+    amount_of_orders=Order.objects.order_by('-created_at').filter(user_id=request.user.id, is_ordered=True)
+    orders=amount_of_orders.count()
+    context={
+        "orders":orders,
+    }
+    return render(request, 'account/dashboard.html', context)
 
 # if the user forget password
 
@@ -251,3 +259,13 @@ def resetPassword(request):
             return redirect('resetPassword')
     else:
         return render(request, 'account/account_reset_password.html')
+
+#get each users orders to showcase them in each myorders dashboard
+def myOrders(request):
+    my_orders=Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
+    
+    context={
+        "my_orders_dash":my_orders
+    }
+    
+    return render(request, "account/myOrdersDashboard.html", context)

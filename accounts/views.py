@@ -4,7 +4,7 @@ from typing import Type
 import requests
 
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import is_valid_path
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
@@ -16,12 +16,12 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
-from django.shortcuts import get_object_or_404
 
 from accounts.models import Account
 from shoppingcart.views import get_session_id
 from shoppingcart.models import CartItem, ShoppingCart
-from .forms import RegistrationForm, UserForm, UserProfile 
+from .forms import RegistrationForm, UserForm, UserFormProfile
+from .models import UserProfile
 from orders.models import Order
 
 # Create your views here.
@@ -44,6 +44,13 @@ def register(request):
                 first_name=first_name, last_name=last_name, email=email, username=user_name, password=password)
             user.phone_number = phone_number
             user.save()
+            
+            #once the user is created, create a userProfile afterwards, default an image
+            user_profile=UserProfile()
+            user_profile.user_id=user.id
+            
+            user_profile.profile_picture="default/avatar2.png"
+            user_profile.save()
 
             # USER Authentication
             current_site = get_current_site(request)
@@ -180,11 +187,12 @@ def verification(request, uidb64, token):
 
 @login_required(login_url='login')
 def dashboard(request):
-    #get the total num of orders for dashboard display, -creared_at, the (-) gives results in descending order
-    amount_of_orders=Order.objects.order_by('-created_at').filter(user_id=request.user.id, is_ordered=True)
-    orders=amount_of_orders.count()
-    context={
-        "orders":orders,
+    # get the total num of orders for dashboard display, -creared_at, the (-) gives results in descending order
+    amount_of_orders = Order.objects.order_by(
+        '-created_at').filter(user_id=request.user.id, is_ordered=True)
+    orders = amount_of_orders.count()
+    context = {
+        "orders": orders,
     }
     return render(request, 'account/dashboard.html', context)
 
@@ -261,32 +269,40 @@ def resetPassword(request):
     else:
         return render(request, 'account/account_reset_password.html')
 
-#get each users orders to showcase them in each myorders dashboard
+# get each users orders to showcase them in each myorders dashboard
+
+
 def myOrders(request):
-    my_orders=Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
-    
-    context={
-        "my_orders_dash":my_orders
+    my_orders = Order.objects.filter(
+        user=request.user, is_ordered=True).order_by('-created_at')
+
+    context = {
+        "my_orders_dash": my_orders
     }
-    
+
     return render(request, "account/myOrdersDashboard.html", context)
 
+
 def editProfile(request):
-    profile=get_object_or_404(UserProfile, user=request.user)
-    #check if we have an account already
+    profile = get_object_or_404(UserProfile, user=request.user)
+    # instance is to update the profile, not create
     if request.method == 'POST':
-        user_form=UserForm(request.POST, instance=request.user)
-        user_profile=UserProfile(request.POST, request.FILES, user=request.user)
-        if  user_form.is_valid() and user_profile.is_valid():
+        user_form = UserForm(request.POST, instance=request.user)
+        #update using form, request.FILES is used to update the image.jpg file
+        user_profile = UserFormProfile(request.POST, request.FILES, instance=profile)
+        if user_form.is_valid() and user_profile.is_valid():
             user_form.save()
             user_profile.save()
-            messages.success(request, "Form completed, your information have been saved.")
-            return redirect('editProfile')
+            messages.success(
+                request, "Form completed, your information have been saved.")
+            return redirect('editProfile')  
+    #dont do anything, just show the users info
     else:
-        user_form=UserForm(instance=request.user)
-        user_profile=UserProfile(instance=request.user)
-    context={
-        'user_form':user_form,
+        user_form = UserForm(instance=request.user)
+        user_profile = UserFormProfile(instance=profile)
+    context = {
+        'user_form': user_form,
         'user_profile': user_profile,
+        'profile':profile,
     }
-    return render(request, 'account/editProfile.html')
+    return render(request, 'account/editProfile.html', context)

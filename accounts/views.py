@@ -191,8 +191,10 @@ def dashboard(request):
     amount_of_orders = Order.objects.order_by(
         '-created_at').filter(user_id=request.user.id, is_ordered=True)
     orders = amount_of_orders.count()
+    user_profile=UserProfile.objects.get(user=request.user.id)
     context = {
         "orders": orders,
+        "user_profile":user_profile,
     }
     return render(request, 'account/dashboard.html', context)
 

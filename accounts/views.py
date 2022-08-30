@@ -22,7 +22,7 @@ from shoppingcart.views import get_session_id
 from shoppingcart.models import CartItem, ShoppingCart
 from .forms import RegistrationForm, UserForm, UserFormProfile
 from .models import UserProfile
-from orders.models import Order
+from orders.models import Order, OrderProduct
 
 # Create your views here.
 
@@ -271,7 +271,7 @@ def resetPassword(request):
 
 # get each users orders to showcase them in each myorders dashboard
 
-
+@login_required(login_url='login')
 def myOrders(request):
     my_orders = Order.objects.filter(
         user=request.user, is_ordered=True).order_by('-created_at')
@@ -282,7 +282,7 @@ def myOrders(request):
 
     return render(request, "account/myOrdersDashboard.html", context)
 
-
+@login_required(login_url='login')
 def editProfile(request):
     profile = get_object_or_404(UserProfile, user=request.user)
     # instance is to update the profile, not create
@@ -306,3 +306,49 @@ def editProfile(request):
         'profile':profile,
     }
     return render(request, 'account/editProfile.html', context)
+
+
+#sidebar option to change users profile password
+@login_required(login_url='login')
+def changePassword(request):
+    if request.method=='POST':
+        #get the data
+        current_password = request.POST['current_password']
+        new_password = request.POST['new_password']
+        confirm_password = request.POST['confirm_password']
+        
+        #confirm the password, case sensative
+        user=Account.objects.get(username__exact=request.user.username)
+        
+        #check for matches in pass
+        if new_password == confirm_password:
+            #check for current user
+            success=user.check_password(current_password)
+            if success:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, 'Password successfully changed!')
+                return redirect('changePassword')
+            else:
+                messages.error(request, 'Current password did not match the user, try again.')
+                return redirect('changePassword')
+        else:
+            messages.error(request, 'New passwords dont match!')
+            return redirect('changePassword')
+    return render(request, 'account/changePassword.html')
+
+
+#show the details of orders when the user clicks on his/her order number
+@login_required(login_url='login')
+def orderDetail(request, order_id):
+    #get the order num and order details
+    order=Order.objects.get(order_number=order_id)
+    order_details=OrderProduct.objects.filter(order__order_number=order_id)
+    sub=order.order_total-order.tax
+    context={
+        'order':order,
+        'order_details':order_details,
+        'sub':sub
+    }
+    
+    return render(request, 'account/orderDetail.html', context)

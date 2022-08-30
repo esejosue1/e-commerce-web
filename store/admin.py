@@ -1,8 +1,14 @@
 from django.contrib import admin
-from .models import Product, ProductReview, Variation  # importing the Product class
-
+from .models import Product, ProductReview, Variation, ProductGallery  # importing the Product class
+import admin_thumbnails
 
 # Register your models here.
+
+#class that will show the product gallery section 
+@admin_thumbnails.thumbnail('gallery')
+class ProductGalleryInline(admin.TabularInline):
+    model=ProductGallery
+    extra=1
 
 # class that will desplay the following for the user to input values
 class ProductAdmin(admin.ModelAdmin):
@@ -10,6 +16,7 @@ class ProductAdmin(admin.ModelAdmin):
                     'category', 'modified_date', 'is_available')
     # tuple with only one item
     prepopulated_fields = {'slug': ('product_name',)}
+    inlines=[ProductGalleryInline]
 
 #class to display the variation option under the admin page
 class variationAdmin(admin.ModelAdmin):
@@ -24,3 +31,4 @@ class variationAdmin(admin.ModelAdmin):
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Variation, variationAdmin)
 admin.site.register(ProductReview)
+admin.site.register(ProductGallery)
